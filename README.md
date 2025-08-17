@@ -1,2 +1,2 @@
 # Lets Eat
-This project contains the Lets_Eat.py program for meal planning.
+This project was created for those moments where you simply cannot decide where to eat.
