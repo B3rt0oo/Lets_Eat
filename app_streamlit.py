@@ -130,7 +130,7 @@ st.markdown("""
 
 with st.sidebar:
     st.header("Let's Eat — Settings")
-    api_key = st.text_input("Google Maps API key", type="password", value=os.environ.get("GOOGLE_MAPS_API_KEY",""))
+    api_key = st.text_input("Google Maps API key", type="password", value=getattr(st, "secrets", {}).get("GOOGLE_MAPS_API_KEY", os.environ.get("GOOGLE_MAPS_API_KEY", "")))
     zip_code = st.text_input("Starting ZIP", value=st.session_state.get("zip",""))
     colA, colB = st.columns(2)
     with colA:
@@ -155,7 +155,7 @@ with st.sidebar:
                                    keyword=keyword or None, max_results=60)
         st.session_state["places"] = filter_unique_with_rating(rows, float(min_rating))
         st.session_state["idx"] = 0
-        st.experimental_rerun()
+        st.rerun()
 
 def ensure_client() -> Optional["googlemaps.Client"]:
     key = st.session_state.get("api_key","")
@@ -195,11 +195,11 @@ likes = st.session_state.get("likes", []); suggested = st.session_state.get("sug
 
 if idx >= len(places):
     st.warning("No more suggestions in this ZIP.")
-    if advance_zip(): st.success(f"Switched to next ZIP: {st.session_state.get('zip')}"); st.experimental_rerun()
+    if advance_zip(): st.success(f"Switched to next ZIP: {st.session_state.get('zip')}"); st.rerun()
     else: st.error("No more nearby ZIP codes to search."); st.stop()
 
 place = places[idx]; pid = place.get("place_id")
-if pid in suggested: st.session_state["idx"] = idx + 1; st.experimental_rerun()
+if pid in suggested: st.session_state["idx"] = idx + 1; st.rerun()
 
 st.markdown('<div class="fade-enter">', unsafe_allow_html=True)
 img = photo_bytes(st.session_state["api_key"], place)
@@ -210,12 +210,12 @@ st.subheader(place.get("name","")); st.caption(describe_place(place))
 col1, col2, col3 = st.columns([1,1,1])
 with col1:
     if st.button("👎 Nope", use_container_width=True):
-        suggested.add(pid); st.session_state["suggested_ids"] = suggested; st.session_state["idx"] = idx + 1; st.experimental_rerun()
+        suggested.add(pid); st.session_state["suggested_ids"] = suggested; st.session_state["idx"] = idx + 1; st.rerun()
 with col2: st.write(" ")
 with col3:
     if st.button("👍 Like", use_container_width=True):
         suggested.add(pid); st.session_state["suggested_ids"] = suggested
-        st.session_state["likes"] = likes + [place]; st.session_state["idx"] = idx + 1; st.experimental_rerun()
+        st.session_state["likes"] = likes + [place]; st.session_state["idx"] = idx + 1; st.rerun()
 
 with st.expander(f"Liked ({len(likes)})", expanded=False):
     for p in likes: st.write("• " + p.get("name",""))
