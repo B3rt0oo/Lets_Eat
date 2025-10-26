@@ -1,0 +1,10 @@
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: 0; }
+.wrap { max-width: 640px; margin: 24px auto; padding: 0 16px; }
+#start input, #start button { padding: 8px; margin: 4px; }
+.card.hidden { display: none; }
+.card .photo, .card .map { width: 100%; border-radius: 12px; margin: 8px 0; }
+.actions { display: flex; gap: 16px; margin-top: 8px; }
+.actions button { padding: 10px 16px; border: 0; border-radius: 999px; cursor: pointer; }
+#nope { background: #ef4444; color: #fff; }
+#like { background: #22c55e; color: #fff; }
+.zip { color: #666; font-size: 12px; margin-bottom: 4px; }

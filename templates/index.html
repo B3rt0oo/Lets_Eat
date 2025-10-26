@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Let's Eat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>Let's Eat 🍽️</h1>
+    <form id="start">
+      <input type="password" id="api_key" placeholder="API key" />
+      <input type="text" id="zip" placeholder="ZIP" />
+      <input type="number" id="radius" placeholder="Radius (m)" value="5000" />
+      <input type="number" step="0.1" id="min_rating" placeholder="Min rating" value="0" />
+      <input type="text" id="keyword" placeholder="Keyword (optional)" />
+      <label><input type="checkbox" id="open_now" /> Open now</label>
+      <button type="submit">Start</button>
+    </form>
+
+    <div id="card" class="card hidden">
+      <div class="zip">ZIP: <span id="ziplbl"></span></div>
+      <img id="photo" class="photo" />
+      <img id="map" class="map" />
+      <h2 id="name"></h2>
+      <p id="meta"></p>
+      <p id="addr"></p>
+      <div class="actions">
+        <button id="nope">👎 Nope</button>
+        <button id="like">👍 Like</button>
+      </div>
+      <p id="status"></p>
+    </div>
+  </div>
+<script>
+async function startFlow(ev){
+  ev.preventDefault();
+  const params = new URLSearchParams({
+    zip: document.getElementById('zip').value.trim(),
+    radius: document.getElementById('radius').value,
+    min_rating: document.getElementById('min_rating').value,
+    keyword: document.getElementById('keyword').value.trim(),
+    open_now: document.getElementById('open_now').checked ? 'true' : '',
+    api_key: document.getElementById('api_key').value
+  });
+  const res = await fetch('/api/start?'+params.toString());
+  if(!res.ok){ alert('Start failed. Check API key and ZIP.'); return; }
+  document.getElementById('card').classList.remove('hidden');
+  loadNext();
+}
+async function loadNext(){
+  const r = await fetch('/api/next');
+  const data = await r.json();
+  const status = document.getElementById('status');
+  if(data.done){ status.innerText = 'No more nearby ZIP codes.'; return; }
+  document.getElementById('ziplbl').innerText = data.zip || '';
+  document.getElementById('name').innerText = data.name || '';
+  const price = data.price ? '$'.repeat(data.price) : '?';
+  const rating = data.rating ? `${data.rating}★` : '';
+  const rev = data.reviews ? `(${data.reviews} reviews)` : '';
+  document.getElementById('meta').innerText = [rating, rev, price].filter(Boolean).join('  •  ');
+  document.getElementById('addr').innerText = data.address || '';
+  document.getElementById('photo').src = data.photo_ref ? `/api/photo?ref=${encodeURIComponent(data.photo_ref)}&w=900` : '';
+  if(data.lat && data.lng){
+    const mk = `${data.lat},${data.lng}`;
+    const key = document.getElementById('api_key').value;
+    document.getElementById('map').src = `https://maps.googleapis.com/maps/api/staticmap?center=${mk}&zoom=15&size=640x320&scale=2&markers=color:red|${mk}&key=${encodeURIComponent(key)}`;
+  } else { document.getElementById('map').src = ''; }
+  document.getElementById('nope').onclick = ()=> swipe(data.id, 'left');
+  document.getElementById('like').onclick = ()=> swipe(data.id, 'right');
+}
+async function swipe(id, dir){
+  await fetch('/api/swipe', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id, dir})});
+  loadNext();
+}
+document.getElementById('start').addEventListener('submit', startFlow);
+</script>
+</body>
+</html>
