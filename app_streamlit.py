@@ -203,9 +203,9 @@ if pid in suggested: st.session_state["idx"] = idx + 1; st.rerun()
 
 st.markdown('<div class="fade-enter">', unsafe_allow_html=True)
 img = photo_bytes(st.session_state["api_key"], place)
-if img: st.image(BytesIO(img), use_column_width=True)
+if img: st.image(BytesIO(img), use_container_width=True)
 m = static_map_bytes(st.session_state["api_key"], place)
-if m: st.image(BytesIO(m), use_column_width=True, caption="Map preview")
+if m: st.image(BytesIO(m), use_container_width=True, caption="Map preview")
 st.subheader(place.get("name","")); st.caption(describe_place(place))
 col1, col2, col3 = st.columns([1,1,1])
 with col1:
