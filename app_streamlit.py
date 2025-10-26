@@ -3,6 +3,17 @@ from io import BytesIO
 from typing import List, Optional, Sequence, Tuple
 import requests, streamlit as st
 
+# Compatibility helper for rerun across Streamlit versions
+def _rerun():
+    try:
+        _rerun()
+    except Exception:
+        try:
+            _rerun()
+        except Exception:
+            pass
+
+
 try:
     import googlemaps
 except Exception:
@@ -155,7 +166,7 @@ with st.sidebar:
                                    keyword=keyword or None, max_results=60)
         st.session_state["places"] = filter_unique_with_rating(rows, float(min_rating))
         st.session_state["idx"] = 0
-        st.rerun()
+        _rerun()
 
 def ensure_client() -> Optional["googlemaps.Client"]:
     key = st.session_state.get("api_key","")
@@ -195,11 +206,11 @@ likes = st.session_state.get("likes", []); suggested = st.session_state.get("sug
 
 if idx >= len(places):
     st.warning("No more suggestions in this ZIP.")
-    if advance_zip(): st.success(f"Switched to next ZIP: {st.session_state.get('zip')}"); st.rerun()
+    if advance_zip(): st.success(f"Switched to next ZIP: {st.session_state.get('zip')}"); _rerun()
     else: st.error("No more nearby ZIP codes to search."); st.stop()
 
 place = places[idx]; pid = place.get("place_id")
-if pid in suggested: st.session_state["idx"] = idx + 1; st.rerun()
+if pid in suggested: st.session_state["idx"] = idx + 1; _rerun()
 
 st.markdown('<div class="fade-enter">', unsafe_allow_html=True)
 img = photo_bytes(st.session_state["api_key"], place)
@@ -210,12 +221,12 @@ st.subheader(place.get("name","")); st.caption(describe_place(place))
 col1, col2, col3 = st.columns([1,1,1])
 with col1:
     if st.button("👎 Nope", use_container_width=True):
-        suggested.add(pid); st.session_state["suggested_ids"] = suggested; st.session_state["idx"] = idx + 1; st.rerun()
+        suggested.add(pid); st.session_state["suggested_ids"] = suggested; st.session_state["idx"] = idx + 1; _rerun()
 with col2: st.write(" ")
 with col3:
     if st.button("👍 Like", use_container_width=True):
         suggested.add(pid); st.session_state["suggested_ids"] = suggested
-        st.session_state["likes"] = likes + [place]; st.session_state["idx"] = idx + 1; st.rerun()
+        st.session_state["likes"] = likes + [place]; st.session_state["idx"] = idx + 1; _rerun()
 
 with st.expander(f"Liked ({len(likes)})", expanded=False):
     for p in likes: st.write("• " + p.get("name",""))
