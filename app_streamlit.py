@@ -202,7 +202,7 @@ if not st.session_state.get("started"):
     st.info("Enter your API key and starting ZIP in the sidebar, then click Start."); st.stop()
 
 places = st.session_state.get("places", []); idx = int(st.session_state.get("idx", 0))
-likes = st.session_state.get("likes", []); suggested = st.session_state.get("suggested_ids", set())
+likes = st.session_state.get("likes", []); suggested = set(st.session_state.get("suggested_ids", []))
 
 if idx >= len(places):
     st.warning("No more suggestions in this ZIP.")
@@ -210,6 +210,17 @@ if idx >= len(places):
     else: st.error("No more nearby ZIP codes to search."); st.stop()
 
 place = places[idx]; pid = place.get("place_id")
+cur = {
+    "id": pid,
+    "name": place.get("name"),
+    "rating": place.get("rating"),
+    "user_ratings_total": place.get("user_ratings_total"),
+    "price_level": place.get("price_level"),
+    "vicinity": place.get("vicinity") or place.get("formatted_address"),
+    "geometry": place.get("geometry"),
+    "photos": place.get("photos"),
+}
+st.session_state["current_place"] = cur
 if pid in suggested: st.session_state["idx"] = idx + 1; _rerun()
 
 st.markdown('<div class="fade-enter">', unsafe_allow_html=True)
